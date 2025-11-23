@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zeitkonto & Feierabendrechner (4 Rechner)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --orange: #ff9800;
+      --orange-dark: #f57c00;
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --text: #333333;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: radial-gradient(circle at top, #fff7e6 0, #f3f3f3 45%, #e9e9e9 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+    }
+    .app {
+      max-width: 900px;
+      width: 100%;
+    }
+    .main-header {
+      background: var(--orange-dark);
+      color: white;
+      padding: 14px 16px;
+      border-radius: 14px 14px 0 0;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      margin-bottom: 8px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 16px 16px 18px;
+      border-radius: 12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+      border: 1px solid #e0e0e0;
+    }
+    h2 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      color: var(--orange-dark);
+      text-align: left;
+    }
+    .subtitle {
+      font-size: 0.8rem;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    .row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 8px;
+    }
+    .row label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .row small {
+      font-size: 0.75rem;
+      color: #666;
+    }
+    input[type="time"], input[type="text"] {
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      border: 1px solid #bdbdbd;
+      width: 140px;
+    }
+    .inputs-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .hint {
+      font-size: 0.78rem;
+      color: #777;
+      margin-bottom: 8px;
+    }
+    .results {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #ccc;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 5px;
+    }
+    .result-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .result-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    .result-value.orange {
+      color: var(--orange-dark);
+    }
+    .btn-row {
+      margin-top: 10px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-main {
+      background: var(--orange);
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .btn-main:active {
+      background: var(--orange-dark);
+      transform: translateY(1px);
+    }
+    .btn-ghost {
+      background: white;
+      border: 1px solid #ccc;
+      color: #555;
+    }
+    .error {
+      color: #c62828;
+      font-size: 0.75rem;
+      margin-top: 3px;
+    }
+    .footer-note {
+      text-align: center;
+      opacity: 0.5;
+      font-size: 0.75rem;
+      margin-top: 12px;
+    }
+    @media (max-width: 600px) {
+      .main-header {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="main-header">
+      Zeitkonto & Feierabendrechner (4 Rechner)
+    </div>
+
+    <div class="grid">
+      <!-- RECHNER 1: Wunsch-Dienstende -->
+      <div class="card">
+        <h2>Rechner 1: Wunsch-Dienstende</h2>
+        <div class="subtitle">Standarddienst: 7:48 h Arbeitszeit + 0:30 h Pause + 0:25 h Duschen</div>
+
+        <div class="row">
+          <label for="r1_start">Dienstbeginn</label>
+          <input id="r1_start" type="time" />
+          <small>z. B. 05:30</small>
+        </div>
+
+        <div class="row">
+          <label for="r1_pause">Pause</label>
+          <div class="inputs-inline">
+            <input id="r1_pause" type="time" value="00:30" />
+            <small>Standard: 0:30 h</small>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="r1_wunsch">Wunsch-Dienstende (Zeitpunkt, zu dem der AN gehen möchte)</label>
+          <input id="r1_wunsch" type="time" />
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-main" type="button" onclick="calcR1()">👉 Berechnen</button>
+          <button class="btn-ghost" type="button" onclick="resetR1()">♻ Zurücksetzen</button>
+        </div>
+        <div id="r1_error" class="error"></div>
+
+        <div class="results" id="r1_results" style="display:none;">
+          <div class="result-row">
+            <div class="result-label">Dienstende regulär (mit Duschen)</div>
+            <div class="result-value" id="r1_regEnd"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Zeit auf dem Tageszettel (ohne Pause)</div>
+            <div class="result-value" id="r1_tageszettel"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Entnahme Zeitkonto</div>
+            <div class="result-value orange" id="r1_entnahme"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECHNER 2: Entnahme-Wunsch (Rückwärts) -->
+      <div class="card">
+        <h2>Rechner 2: Entnahme-Wunsch</h2>
+        <div class="subtitle">AN sagt, wie viel Zeit er vom Zeitkonto abziehen will.</div>
+
+        <div class="row">
+          <label for="r2_start">Dienstbeginn</label>
+          <input id="r2_start" type="time" />
+        </div>
+
+        <div class="row">
+          <label for="r2_pause">Pause</label>
+          <div class="inputs-inline">
+            <input id="r2_pause" type="time" value="00:30" />
+            <small>Standard: 0:30 h</small>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="r2_entnahme">Wunsch-Entnahme vom Zeitkonto (Arbeitszeit, die fehlt)</label>
+          <input id="r2_entnahme" type="time" value="00:00" />
+          <small>z. B. 01:30 → 1h30 weniger arbeiten</small>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-main" type="button" onclick="calcR2()">👉 Berechnen</button>
+          <button class="btn-ghost" type="button" onclick="resetR2()">♻ Zurücksetzen</button>
+        </div>
+        <div id="r2_error" class="error"></div>
+
+        <div class="results" id="r2_results" style="display:none;">
+          <div class="result-row">
+            <div class="result-label">Zeit auf dem Tageszettel (ohne Pause)</div>
+            <div class="result-value" id="r2_tageszettel"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Beginn Duschzeit</div>
+            <div class="result-value" id="r2_duschStart"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Dienstende mit Duschen</div>
+            <div class="result-value orange" id="r2_end"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECHNER 3: Winterdienst mit Schichtverlängerung -->
+      <div class="card">
+        <h2>Rechner 3: Winterdienst (mit Schichtverlängerung)</h2>
+        <div class="subtitle">Normalschicht + optionale Schichtverlängerung, Duschen inklusive.</div>
+
+        <div class="row">
+          <label for="r3_start">Dienstbeginn</label>
+          <input id="r3_start" type="time" />
+        </div>
+
+        <div class="row">
+          <label>Normale Dienstzeit</label>
+          <div class="inputs-inline">
+            <input id="r3_baseWork" type="time" value="07:48" />
+            <small>Standard: 7:48 h</small>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Pause Grundschicht</label>
+          <div class="inputs-inline">
+            <input id="r3_basePause" type="time" value="00:30" />
+            <small>Standard: 0:30 h</small>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Schichtverlängerung (inkl. 15 Min Pause)</label>
+          <div class="inputs-inline">
+            <input id="r3_ext" type="time" value="00:00" />
+            <small>z. B. 02:00 für +2 h Arbeit inkl. 15 Min Pause</small>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-main" type="button" onclick="calcR3()">👉 Berechnen</button>
+          <button class="btn-ghost" type="button" onclick="resetR3()">♻ Zurücksetzen</button>
+        </div>
+        <div id="r3_error" class="error"></div>
+
+        <div class="results" id="r3_results" style="display:none;">
+          <div class="result-row">
+            <div class="result-label">Reine Arbeitszeit (ohne Pause)</div>
+            <div class="result-value" id="r3_netWork"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Beginn Duschzeit</div>
+            <div class="result-value" id="r3_duschStart"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Dienstende mit Duschen</div>
+            <div class="result-value orange" id="r3_end"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECHNER 4: Spontan-Feierabend -->
+      <div class="card">
+        <h2>Rechner 4: Spontan-Feierabend</h2>
+        <div class="subtitle">AN kommt ins Büro und fragt „Kann ich jetzt gehen?“</div>
+
+        <div class="row">
+          <label for="r4_now">Zeitpunkt der Anfrage („Jetzt“)</label>
+          <input id="r4_now" type="time" />
+        </div>
+
+        <div class="row">
+          <label for="r4_start">Dienstbeginn</label>
+          <input id="r4_start" type="time" />
+        </div>
+
+        <div class="row">
+          <label for="r4_pauseTaken">Genommene Pause (bis jetzt)</label>
+          <div class="inputs-inline">
+            <input id="r4_pauseTaken" type="time" value="00:30" />
+            <small>Wenn noch keine Pause: 00:00</small>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-main" type="button" onclick="calcR4()">👉 Berechnen</button>
+          <button class="btn-ghost" type="button" onclick="resetR4()">♻ Zurücksetzen</button>
+        </div>
+        <div id="r4_error" class="error"></div>
+
+        <div class="results" id="r4_results" style="display:none;">
+          <div class="result-row">
+            <div class="result-label">Zeit auf dem Tageszettel (ohne Pause)</div>
+            <div class="result-value" id="r4_tageszettel"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Dienstende mit Duschen (jetzt + 25 Min)</div>
+            <div class="result-value" id="r4_end"></div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">Entnahme Zeitkonto</div>
+            <div class="result-value orange" id="r4_entnahme"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      entwickelt von Max VR13 • alle Angaben ohne Gewähr
+    </div>
+  </div>
+
+  <script>
+    const SOLL_MIN = 7 * 60 + 48;   // 7:48
+    const DUSCH_MIN = 25;
+    const EXT_PAUSE_MIN = 15;
+
+    function parseTimeToMinutes(str) {
+      if (!str) return NaN;
+      const parts = str.split(":");
+      if (parts.length < 2) return NaN;
+      const h = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      if (isNaN(h) || isNaN(m) || h < 0 || m < 0 || m > 59) return NaN;
+      return h * 60 + m;
+    }
+
+    function formatDuration(mins) {
+      if (isNaN(mins)) return "";
+      const sign = mins < 0 ? "-" : "";
+      mins = Math.abs(mins);
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return sign + h.toString() + ":" + m.toString().padStart(2, "0") + " h";
+    }
+
+    function formatClock(mins) {
+      mins = ((mins % 1440) + 1440) % 1440;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return h.toString().padStart(2, "0") + ":" + m.toString().padStart(2, "0") + " Uhr";
+    }
+
+    /* RECHNER 1: Wunsch-Dienstende */
+    function calcR1() {
+      const err = document.getElementById("r1_error");
+      err.textContent = "";
+      const startMin = parseTimeToMinutes(document.getElementById("r1_start").value);
+      const pauseMin = parseTimeToMinutes(document.getElementById("r1_pause").value);
+      const wunschEndMin = parseTimeToMinutes(document.getElementById("r1_wunsch").value);
+
+      if (isNaN(startMin) || isNaN(pauseMin) || isNaN(wunschEndMin)) {
+        err.textContent = "Bitte Dienstbeginn, Pause und Wunsch-Dienstende korrekt eingeben (hh:mm).";
+        document.getElementById("r1_results").style.display = "none";
+        return;
+      }
+
+      const regEndMin = startMin + SOLL_MIN + pauseMin;
+      let workedNet = wunschEndMin - startMin - pauseMin;
+      if (workedNet < 0) workedNet = 0;
+
+      const entnahmeMin = SOLL_MIN - workedNet;
+
+      document.getElementById("r1_regEnd").textContent = formatClock(regEndMin);
+      document.getElementById("r1_tageszettel").textContent = formatDuration(workedNet);
+      document.getElementById("r1_entnahme").textContent = formatDuration(entnahmeMin);
+      document.getElementById("r1_results").style.display = "block";
+    }
+
+    function resetR1() {
+      document.getElementById("r1_start").value = "";
+      document.getElementById("r1_pause").value = "00:30";
+      document.getElementById("r1_wunsch").value = "";
+      document.getElementById("r1_results").style.display = "none";
+      document.getElementById("r1_error").textContent = "";
+    }
+
+    /* RECHNER 2: Entnahme-Wunsch */
+    function calcR2() {
+      const err = document.getElementById("r2_error");
+      err.textContent = "";
+      const startMin = parseTimeToMinutes(document.getElementById("r2_start").value);
+      const pauseMin = parseTimeToMinutes(document.getElementById("r2_pause").value);
+      const entnahmeMin = parseTimeToMinutes(document.getElementById("r2_entnahme").value);
+
+      if (isNaN(startMin) || isNaN(pauseMin) || isNaN(entnahmeMin)) {
+        err.textContent = "Bitte Dienstbeginn, Pause und Entnahme korrekt eingeben (hh:mm).";
+        document.getElementById("r2_results").style.display = "none";
+        return;
+      }
+
+      const netWorkMin = SOLL_MIN - entnahmeMin;
+      const endMin = startMin + netWorkMin + pauseMin;
+      const duschStartMin = endMin - DUSCH_MIN;
+
+      document.getElementById("r2_tageszettel").textContent = formatDuration(netWorkMin);
+      document.getElementById("r2_duschStart").textContent = formatClock(duschStartMin);
+      document.getElementById("r2_end").textContent = formatClock(endMin);
+      document.getElementById("r2_results").style.display = "block";
+    }
+
+    function resetR2() {
+      document.getElementById("r2_start").value = "";
+      document.getElementById("r2_pause").value = "00:30";
+      document.getElementById("r2_entnahme").value = "00:00";
+      document.getElementById("r2_results").style.display = "none";
+      document.getElementById("r2_error").textContent = "";
+    }
+
+    /* RECHNER 3: Winterdienst */
+    function calcR3() {
+      const err = document.getElementById("r3_error");
+      err.textContent = "";
+      const startMin = parseTimeToMinutes(document.getElementById("r3_start").value);
+      const baseWorkMin = parseTimeToMinutes(document.getElementById("r3_baseWork").value);
+      const basePauseMin = parseTimeToMinutes(document.getElementById("r3_basePause").value);
+      let extTotalMin = parseTimeToMinutes(document.getElementById("r3_ext").value);
+
+      if (isNaN(startMin) || isNaN(baseWorkMin) || isNaN(basePauseMin)) {
+        err.textContent = "Bitte Dienstbeginn, Dienstzeit und Pause korrekt eingeben (hh:mm).";
+        document.getElementById("r3_results").style.display = "none";
+        return;
+      }
+      if (isNaN(extTotalMin)) extTotalMin = 0;
+
+      let extWorkMin = 0;
+      if (extTotalMin > 0) {
+        extWorkMin = Math.max(0, extTotalMin - EXT_PAUSE_MIN);
+      }
+      const netWorkMin = baseWorkMin + extWorkMin;
+      const endMin = startMin + baseWorkMin + basePauseMin + extTotalMin;
+      const duschStartMin = endMin - DUSCH_MIN;
+
+      document.getElementById("r3_netWork").textContent = formatDuration(netWorkMin);
+      document.getElementById("r3_duschStart").textContent = formatClock(duschStartMin);
+      document.getElementById("r3_end").textContent = formatClock(endMin);
+      document.getElementById("r3_results").style.display = "block";
+    }
+
+    function resetR3() {
+      document.getElementById("r3_start").value = "";
+      document.getElementById("r3_baseWork").value = "07:48";
+      document.getElementById("r3_basePause").value = "00:30";
+      document.getElementById("r3_ext").value = "00:00";
+      document.getElementById("r3_results").style.display = "none";
+      document.getElementById("r3_error").textContent = "";
+    }
+
+    /* RECHNER 4: Spontan-Feierabend */
+    function calcR4() {
+      const err = document.getElementById("r4_error");
+      err.textContent = "";
+      const nowMin = parseTimeToMinutes(document.getElementById("r4_now").value);
+      const startMin = parseTimeToMinutes(document.getElementById("r4_start").value);
+      const pauseTakenMin = parseTimeToMinutes(document.getElementById("r4_pauseTaken").value);
+
+      if (isNaN(nowMin) || isNaN(startMin) || isNaN(pauseTakenMin)) {
+        err.textContent = "Bitte Anfragezeit, Dienstbeginn und genommene Pause korrekt eingeben (hh:mm).";
+        document.getElementById("r4_results").style.display = "none";
+        return;
+      }
+
+      let workedNet = nowMin - startMin - pauseTakenMin;
+      if (workedNet < 0) workedNet = 0;
+
+      const actualEndMin = nowMin + DUSCH_MIN;
+      const regEndMin = startMin + SOLL_MIN + pauseTakenMin;
+      const entnahmeMin = regEndMin - actualEndMin;
+
+      document.getElementById("r4_tageszettel").textContent = formatDuration(workedNet);
+      document.getElementById("r4_end").textContent = formatClock(actualEndMin);
+      document.getElementById("r4_entnahme").textContent = formatDuration(entnahmeMin);
+      document.getElementById("r4_results").style.display = "block";
+    }
+
+    function resetR4() {
+      document.getElementById("r4_now").value = "";
+      document.getElementById("r4_start").value = "";
+      document.getElementById("r4_pauseTaken").value = "00:30";
+      document.getElementById("r4_results").style.display = "none";
+      document.getElementById("r4_error").textContent = "";
+    }
+  </script>
+</body>
+</html>
