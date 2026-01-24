@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Feierabend- & Tageszettelrechner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --orange:#ff9800;
+  --orange-dark:#f57c00;
+  --blue:#1976d2;
+  --blue-dark:#0d47a1;
+  --grey:#f2f2f2;
+  --text:#333;
+}
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{
+  margin:0;padding:16px;
+  background:radial-gradient(circle at top,#fff7e6 0,#f3f3f3 45%,#e9e9e9 100%);
+  color:var(--text);display:flex;justify-content:center
+}
+.app{max-width:1000px;width:100%}
+.card{
+  background:#fff;border-radius:16px;
+  padding:16px;margin-bottom:18px;
+  box-shadow:0 8px 18px rgba(0,0,0,.12)
+}
+.header{
+  font-weight:800;font-size:1.1rem;
+  padding:10px 14px;border-radius:12px;
+  color:#fff;margin-bottom:10px
+}
+.orange{background:var(--orange-dark)}
+.blue{background:var(--blue-dark)}
+.row{margin-bottom:8px}
+label{font-weight:700;font-size:.9rem}
+input[type=time],input[type=number]{
+  width:160px;padding:6px 8px;
+  border-radius:8px;border:1px solid #bbb
+}
+button{
+  border:none;border-radius:999px;
+  padding:7px 14px;font-weight:700;
+  cursor:pointer
+}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-grey{background:#ddd}
+.result{font-weight:800;text-decoration:underline}
+.decimal{font-size:.8rem;color:#777;text-decoration:none}
+.footer{
+  margin-top:24px;font-size:.85rem;
+  color:#555;text-align:center
+}
+a{color:#1976d2;text-decoration:none}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<div class="card">
+<div class="header orange">Rechner 1 – Feierabend zu bestimmter Uhrzeit</div>
+<div class="row"><label>Dienstbeginn</label><br><input type="time" id="r1_start"></div>
+<div class="row"><label>Gewünschtes Dienstende</label><br><input type="time" id="r1_end"></div>
+<div class="row"><label>Pause (optional)</label><br><input type="time" id="r1_pause" value="00:30"></div>
+<button class="btn-orange" onclick="r1()">👉 Berechnen</button>
+<button class="btn-grey" onclick="r1_reset()">♻ Reset</button>
+<div id="r1_out"></div>
+</div>
+
+<div class="card">
+<div class="header orange">Rechner 2 – Stunden-Entnahme vom Zeitkonto</div>
+<div class="row"><label>Dienstbeginn</label><br><input type="time" id="r2_start"></div>
+<div class="row"><label>Entnahme Zeitkonto (h)</label><br><input type="number" step="0.25" id="r2_take"></div>
+<button class="btn-orange" onclick="r2()">👉 Berechnen</button>
+<button class="btn-grey" onclick="r2_reset()">♻ Reset</button>
+<div id="r2_out"></div>
+<div class="decimal">entwickelt von Max VR13</div>
+</div>
+
+<div class="card">
+<div class="header orange">Rechner 3 – Spontanfeierabend ZEIT</div>
+<div class="row"><label>Dienstbeginn</label><br><input type="time" id="r3_start"></div>
+<div class="row"><label>Zeitpunkt Anfrage</label><br><input type="time" id="r3_now"></div>
+<div class="row"><label>Dienstzeit fix</label><br><input type="time" value="07:48" disabled></div>
+<div class="row"><label>Pause</label><br><input type="time" value="00:30" disabled></div>
+<button class="btn-orange" onclick="r3()">👉 Berechnen</button>
+<button class="btn-grey" onclick="r3_reset()">♻ Reset</button>
+<div id="r3_out"></div>
+</div>
+
+<div class="card">
+<div class="header blue">❄ Rechner 4 – Winterdienst Feierabend WANN (Rundspruch opt.)</div>
+<div class="row"><label>Dienstbeginn</label><br><input type="time" id="r4_start"></div>
+<div class="row">
+<label>Rundspruch</label><br>
+<select id="r4_mode">
+<option value="none">kein Rundspruch</option>
+<option value="ext">Schichtverlängerung</option>
+<option value="10h">Arbeitszeitverlängerung auf 10 h</option>
+<option value="12h">Arbeitszeitverlängerung auf 12 h</option>
+</select>
+</div>
+<div class="row"><label>Schichtverlängerung (falls gewählt)</label><br><input type="time" id="r4_ext"></div>
+<button class="btn-blue" onclick="r4()">👉 Berechnen</button>
+<button class="btn-grey" onclick="r4_reset()">♻ Reset</button>
+<div id="r4_out"></div>
+</div>
+
+<div class="card">
+<div class="header blue">❄ Rechner 5 – Welche Zeit auf dem Tageszettel bei Abgabe Papiere</div>
+<div class="row"><label>Dienstbeginn</label><br><input type="time" id="r5_start"></div>
+<div class="row"><label>Abgabe Papiere</label><br><input type="time" id="r5_paper"></div>
+<button class="btn-blue" onclick="r5()">👉 Berechnen</button>
+<button class="btn-grey" onclick="r5_reset()">♻ Reset</button>
+<div id="r5_out"></div>
+</div>
+
+<div class="footer">
+📱 Mobile Nutzung:<br>
+<a href="https://bovidum.github.io/rechner/" target="_blank">https://bovidum.github.io/rechner/</a><br><br>
+📴 Offline-Nutzung: Datei lokal speichern<br><br>
+💾 Excel-Version im selben Ordner ablegen<br><br>
+<b>Entwickelt von Max VR13</b>
+</div>
+
+</div>
+
+<script>
+function toMin(t){if(!t)return null;let[a,b]=t.split(":");return a*60+ +b}
+function toTime(m){m=(m+1440)%1440;return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")}
+function dec(m){return (m/60).toFixed(2)}
+
+function r1(){
+let s=toMin(r1_start.value),e=toMin(r1_end.value),p=toMin(r1_pause.value)||0;
+let w=e-s-p;
+r1_out.innerHTML=`Tageszettel: <span class=result>${toTime(w)}</span> <span class=decimal>(${dec(w)})</span>`;
+}
+function r1_reset(){r1_out.innerHTML=""}
+
+function r2(){
+let s=toMin(r2_start.value),t=r2_take.value*60;
+let end=s+(7*60+48)-t;
+r2_out.innerHTML=`Dienstende: <span class=result>${toTime(end+25)}</span><br>
+Tageszettel: <span class=result>${toTime((7*60+48)-t)}</span>
+<span class=decimal>(${dec((7*60+48)-t)})</span>`;
+}
+function r2_reset(){r2_out.innerHTML=""}
+
+function r3(){
+let s=toMin(r3_start.value),n=toMin(r3_now.value);
+let w=n-s-30;
+r3_out.innerHTML=`Tageszettel: <span class=result>${toTime(w)}</span>
+<span class=decimal>(${dec(w)})</span>`;
+}
+function r3_reset(){r3_out.innerHTML=""}
+
+function r4(){
+let s=toMin(r4_start.value),m=r4_mode.value,e=0;
+if(m==="none")e=s+7*60+48;
+if(m==="ext")e=s+7*60+48+toMin(r4_ext.value);
+if(m==="10h")e=s+10*60;
+if(m==="12h")e=s+12*60;
+r4_out.innerHTML=`Feierabend: <span class=result>${toTime(e)}</span><br>
+Beginn Dusche: <span class=result>${toTime(e-25)}</span>`;
+}
+function r4_reset(){r4_out.innerHTML=""}
+
+function r5(){
+let s=toMin(r5_start.value),p=toMin(r5_paper.value);
+let w=p-s-30;
+r5_out.innerHTML=`Tageszettel: <span class=result>${toTime(w)}</span>
+<span class=decimal>(${dec(w)})</span>`;
+}
+function r5_reset(){r5_out.innerHTML=""}
+</script>
+</body>
+</html>
